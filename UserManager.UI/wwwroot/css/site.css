@@ -25,9 +25,19 @@ label {
 
 .navbar {
     background-color: var(--MainColor);
-    color: white;
+    color: white !important;
     box-shadow: 0 6px 6px rgba(0,0,0,0.2);
     margin-bottom: 10px;
+}
+
+.navbar-title {
+    color: white;
+    font-size: 24px
+}
+
+.navbar-item {
+    color: white;
+    font-size: 20px
 }
 
 .invalid {

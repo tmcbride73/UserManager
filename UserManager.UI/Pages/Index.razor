@@ -1,5 +1,14 @@
 ﻿@page "/"
 
+@inject NavigationManager NavigationManager
+
 <h1>Blazor User Management Application</h1>
 
-<TelerikButton>User List</TelerikButton>
+<TelerikButton OnClick="@GoToUserList">User List</TelerikButton>
+
+@code {
+    private void GoToUserList()
+    {
+        NavigationManager.NavigateTo("UserList");
+    }
+}

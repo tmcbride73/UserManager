@@ -2,6 +2,7 @@
 @using UserManager.Application.Services
 @using UserManager.Domain
 @inject UserService UserService
+@inject NavigationManager NavigationManager
 
 <h3>User List</h3>
 
@@ -14,7 +15,7 @@
              FilterMode="Telerik.Blazor.GridFilterMode.FilterRow"
              Resizable="true" Reorderable="true" PageSize=16>
     <GridColumns>
-        <GridColumn Field="@(nameof(User.SeqNum))" Title="" Width="200x">
+        <GridColumn Field="@(nameof(User.SeqNum))" Title="" Width="200x" Filterable="false">
             <Template>
                 <TelerikButton Icon="eye" OnClick="(x => ViewUserClicked((context as User).SeqNum))">View</TelerikButton>
                 <TelerikButton Icon="edit" OnClick="(x => EditUserClicked((context as User).SeqNum))">Edit</TelerikButton>
@@ -42,6 +43,8 @@
         <br />
         <label>Activity:</label>@SelectedUser.Activity
         <br />
+        <TelerikFileSelect Multiple="true">
+        </TelerikFileSelect>
     </DialogContent>
     <DialogButtons>
         <TelerikButton OnClick="@(() => { EditVisible = true; ViewVisible = false; })">Edit</TelerikButton>
@@ -55,12 +58,12 @@
     <DialogContent>
         <label>SeqNum:</label>@SelectedUser.SeqNum
         <br />
-        <label>UserID:</label><TelerikTextBox @bind-Value="@SelectedUser.UserName"></TelerikTextBox>
+        <label>UserID:</label><TelerikTextBox @bind-Value="@SelectedUser.UserName" PlaceHolder="UserID"></TelerikTextBox>
         <br />
         <label>First Name:</label><TelerikTextBox @bind-Value="@SelectedUser.FirstName"></TelerikTextBox>
         <br />
         <label>Last Name:</label><TelerikTextBox @bind-Value="@SelectedUser.LastName"></TelerikTextBox>
-        <br />
+        <br />  
         <label>Activity:</label><TelerikTextBox @bind-Value="@SelectedUser.Activity"></TelerikTextBox>
         <br />
     </DialogContent>
