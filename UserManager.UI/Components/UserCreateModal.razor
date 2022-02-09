@@ -1,0 +1,75 @@
+﻿@inject UserService UserService
+
+<TelerikDialog @bind-Visible="@Visible"
+               Width="400px"
+               Title="Create A New User">
+    <DialogContent>
+        <label>UserID:</label><TelerikTextBox @bind-Value="@Entity.UserName"></TelerikTextBox>
+        <br />
+        <label>First Name:</label><TelerikTextBox @bind-Value="@Entity.FirstName"></TelerikTextBox>
+        <br />
+        <label>Last Name:</label><TelerikTextBox @bind-Value="@Entity.LastName"></TelerikTextBox>
+        <br />
+        <label>Activity:</label><TelerikTextBox @bind-Value="@Entity.Activity"></TelerikTextBox>
+        <br />
+    </DialogContent>
+    <DialogButtons>
+        <TelerikButton OnClick="@(() => { CreateUser(); })">Save</TelerikButton>
+        <TelerikButton OnClick="@(() => { Visible = false; })">Cancel</TelerikButton>
+    </DialogButtons>
+</TelerikDialog>
+
+<TelerikNotification @ref="NotificationComponent"></TelerikNotification>
+
+@code {
+
+    [Parameter]
+    public bool Visible { get; set; } = false;
+    [Parameter]
+    public EventCallback<bool> VisibleChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> OnUserCreated { get; set; }
+
+    TelerikNotification NotificationComponent { get; set; }
+    public User Entity { get; set; } = new User();
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
+
+    public async void CreateUser()
+    {
+        try
+        {
+            await UserService.AddUser(Entity);
+            Visible = false;
+            VisibleChanged.InvokeAsync();
+            OnUserCreated.InvokeAsync(true);
+            StateHasChanged();
+
+            NotificationComponent.Show(new NotificationModel()
+            {
+                Text = "User Creation Successful",
+                ThemeColor = "success",
+                ShowIcon = true,
+                Icon = "success"
+            });
+            Entity = new User();
+        }
+        catch(Exception ex)
+        {
+            NotificationComponent.Show(new NotificationModel()
+            {
+                Text = $"User Creation Failed: {ex.Message.ToString()}",
+                ThemeColor = "error",
+                ShowIcon = true,
+                Icon = "error"
+            });
+            Entity = new User();
+            OnUserCreated.InvokeAsync(false);
+        }
+        
+    }
+}

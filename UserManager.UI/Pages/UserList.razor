@@ -1,6 +1,5 @@
 ﻿@page "/UserList"
-@using UserManager.Application.Services
-@using UserManager.Domain
+
 @inject UserService UserService
 @inject NavigationManager NavigationManager
 
@@ -29,162 +28,42 @@
     </GridColumns>
 </TelerikGrid>
 
-<TelerikDialog @bind-Visible="@ViewVisible"
-               Width="400px"
-               Title="@(SelectedUser.FirstName + " " + SelectedUser.LastName + " - " + SelectedUser.SeqNum.ToString())">
-    <DialogContent>
-        <label>SeqNum:</label>@SelectedUser.SeqNum
-        <br />
-        <label>UserID:</label>@SelectedUser.UserName
-        <br />
-        <label>First Name:</label>@SelectedUser.FirstName
-        <br />
-        <label>Last Name:</label>@SelectedUser.LastName
-        <br />
-        <label>Activity:</label>@SelectedUser.Activity
-        <br />
-        <TelerikFileSelect Multiple="true">
-        </TelerikFileSelect>
-    </DialogContent>
-    <DialogButtons>
-        <TelerikButton OnClick="@(() => { EditVisible = true; ViewVisible = false; })">Edit</TelerikButton>
-        <TelerikButton OnClick="@(() => { ViewVisible = false; })">Cancel</TelerikButton>
-    </DialogButtons>
-</TelerikDialog>
+<UserViewModal @bind-Visible="ViewVisible" OnEditClicked=@(() => {ViewVisible = false; EditVisible = true;}) UserSeqNum="SelectedUserSeqNum"></UserViewModal>
 
-<TelerikDialog @bind-Visible="@EditVisible"
-               Width="400px"
-               Title="@("Editing: " + SelectedUser.FirstName + " " + SelectedUser.LastName + " - " + SelectedUser.SeqNum.ToString())">
-    <DialogContent>
-        <label>SeqNum:</label>@SelectedUser.SeqNum
-        <br />
-        <label>UserID:</label><TelerikTextBox @bind-Value="@SelectedUser.UserName" PlaceHolder="UserID"></TelerikTextBox>
-        <br />
-        <label>First Name:</label><TelerikTextBox @bind-Value="@SelectedUser.FirstName"></TelerikTextBox>
-        <br />
-        <label>Last Name:</label><TelerikTextBox @bind-Value="@SelectedUser.LastName"></TelerikTextBox>
-        <br />  
-        <label>Activity:</label><TelerikTextBox @bind-Value="@SelectedUser.Activity"></TelerikTextBox>
-        <br />
-    </DialogContent>
-    <DialogButtons>
-        <TelerikButton OnClick="@(() => { UpdateUser(SelectedUser.SeqNum); })">Update</TelerikButton>
-        <TelerikButton OnClick="@(() => { EditVisible = false; })">Cancel</TelerikButton>
-    </DialogButtons>
-</TelerikDialog>
+<UserEditModal @bind-Visible="EditVisible" OnUserUpdated=@(async (x) => {if(x){await GetAllUsers();}}) UserSeqNum="SelectedUserSeqNum"></UserEditModal>
 
-<TelerikDialog @bind-Visible="@CreateVisible"
-               Width="400px"
-               Title="Create A New User">
-    <DialogContent>
-        <label>UserID:</label><TelerikTextBox @bind-Value="@NewUser.UserName"></TelerikTextBox>
-        <br />
-        <label>First Name:</label><TelerikTextBox @bind-Value="@NewUser.FirstName"></TelerikTextBox>
-        <br />
-        <label>Last Name:</label><TelerikTextBox @bind-Value="@NewUser.LastName"></TelerikTextBox>
-        <br />
-        <label>Activity:</label><TelerikTextBox @bind-Value="@NewUser.Activity"></TelerikTextBox>
-        <br />
-    </DialogContent>
-    <DialogButtons>
-        <TelerikButton OnClick="@(() => { CreateUser(); })">Save</TelerikButton>
-        <TelerikButton OnClick="@(() => { CreateVisible = false; })">Cancel</TelerikButton>
-    </DialogButtons>
-</TelerikDialog>
-
-<TelerikNotification @ref="NotificationComponent"></TelerikNotification>
+<UserCreateModal @bind-Visible="CreateVisible" OnUserCreated=@(async (x) => {if(x){await GetAllUsers();}})></UserCreateModal>
 
 @code {
 
-    TelerikNotification NotificationComponent { get; set; }
-
     public List<User> Users { get; set; }
-    public User SelectedUser { get; set; } = new User();
-    public User NewUser { get; set; } = new User();
+    public long? SelectedUserSeqNum { get; set; }
 
     public bool CreateVisible { get; set; } = false;
     public bool ViewVisible { get; set; } = false;
     public bool EditVisible { get; set; } = false;
 
     protected override async Task OnInitializedAsync() {
+        await GetAllUsers();
+    }
+
+    public async Task GetAllUsers()
+    {
         Users = (await UserService.GetAllUsers()).ToList();
     }
 
-    public async void ViewUserClicked(long? seqNum)
+    public void ViewUserClicked(long? seqNum)
     {
-        SelectedUser = await UserService.GetUser(new UserFilter { SeqNum = seqNum });
+        SelectedUserSeqNum = seqNum;
         ViewVisible = true;
         StateHasChanged();
     }
 
-    public async void EditUserClicked(long? seqNum)
+    public void EditUserClicked(long? seqNum)
     {
-        SelectedUser = await UserService.GetUser(new UserFilter { SeqNum = seqNum });
+        SelectedUserSeqNum = seqNum;
         EditVisible = true;
         StateHasChanged();
-    }
-
-    public async void UpdateUser(long? seqNum)
-    {
-        try
-        {
-            await UserService.UpdateUser(SelectedUser);
-            EditVisible = false;
-            StateHasChanged();
-            Users = (await UserService.GetAllUsers()).ToList();
-            StateHasChanged();
-
-            NotificationComponent.Show(new NotificationModel()
-            {
-                Text = "User Update Successful",
-                ThemeColor = "success",
-                ShowIcon = true,
-                Icon = "success"
-            });
-        }
-        catch(Exception ex)
-        {
-            NotificationComponent.Show(new NotificationModel()
-            {
-                Text = $"User Update Failed: {ex.Message.ToString()}",
-                ThemeColor = "error",
-                ShowIcon = true,
-                Icon = "error"
-            });
-        }
-    }
-
-    public async void CreateUser()
-    {
-        try
-        {
-            await UserService.AddUser(NewUser);
-            CreateVisible = false;
-            StateHasChanged();
-            Users = (await UserService.GetAllUsers()).ToList();
-            StateHasChanged();
-
-            NotificationComponent.Show(new NotificationModel()
-            {
-                Text = "User Creation Successful",
-                ThemeColor = "success",
-                ShowIcon = true,
-                Icon = "success"
-            });
-            NewUser = new User();
-        }
-        catch(Exception ex)
-        {
-            NotificationComponent.Show(new NotificationModel()
-            {
-                Text = $"User Creation Failed: {ex.Message.ToString()}",
-                ThemeColor = "error",
-                ShowIcon = true,
-                Icon = "error"
-            });
-            NewUser = new User();
-        }
-        
     }
 
 }

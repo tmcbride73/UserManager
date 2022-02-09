@@ -1,0 +1,48 @@
+﻿@inject UserService UserService
+
+<TelerikDialog @bind-Visible="@Visible"
+               Width="400px"
+               Title="@(Entity.FirstName + " " + Entity.LastName + " - " + Entity.SeqNum.ToString())">
+    <DialogContent>
+        <label>SeqNum:</label>@Entity.SeqNum
+        <br />
+        <label>UserID:</label>@Entity.UserName
+        <br />
+        <label>First Name:</label>@Entity.FirstName
+        <br />
+        <label>Last Name:</label>@Entity.LastName
+        <br />
+        <label>Activity:</label>@Entity.Activity
+        <br />
+        <TelerikFileSelect Multiple="true">
+        </TelerikFileSelect>
+    </DialogContent>
+    <DialogButtons>
+        <TelerikButton OnClick="(() => OnEditClicked.InvokeAsync())">Edit</TelerikButton>
+        <TelerikButton OnClick="@(() => { Visible = false; })">Cancel</TelerikButton>
+    </DialogButtons>
+</TelerikDialog>
+
+@code {
+
+    [Parameter]
+    public bool Visible { get; set; } = false;
+    [Parameter]
+    public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter]
+    public long? UserSeqNum { get; set; }
+    [Parameter]
+    public EventCallback OnEditClicked { get; set; }
+
+    public User Entity { get; set; } = new User();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await GetUser();
+    }
+
+    private async Task GetUser()
+    {
+        Entity = await UserService.GetUser(new UserFilter { SeqNum = UserSeqNum });
+    }
+}

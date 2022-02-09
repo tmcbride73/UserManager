@@ -1,0 +1,80 @@
+﻿@inject UserService UserService
+
+<TelerikDialog @bind-Visible="@Visible"
+               Width="400px"
+               Title="@("Editing: " + Entity.FirstName + " " + Entity.LastName + " - " + Entity.SeqNum.ToString())">
+    <DialogContent>
+        <label>SeqNum:</label>@Entity.SeqNum
+        <br />
+        <label>UserID:</label><TelerikTextBox @bind-Value="@Entity.UserName" PlaceHolder="UserID"></TelerikTextBox>
+        <br />
+        <label>First Name:</label><TelerikTextBox @bind-Value="@Entity.FirstName"></TelerikTextBox>
+        <br />
+        <label>Last Name:</label><TelerikTextBox @bind-Value="@Entity.LastName"></TelerikTextBox>
+        <br />  
+        <label>Activity:</label><TelerikTextBox @bind-Value="@Entity.Activity"></TelerikTextBox>
+        <br />
+    </DialogContent>
+    <DialogButtons>
+        <TelerikButton OnClick="@(UpdateUser)">Update</TelerikButton>
+        <TelerikButton OnClick="@(() => { Visible = false; })">Cancel</TelerikButton>
+    </DialogButtons>
+</TelerikDialog>
+
+<TelerikNotification @ref="NotificationComponent"></TelerikNotification>
+
+@code {
+
+    [Parameter]
+    public bool Visible { get; set; } = false;
+    [Parameter]
+    public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter]
+    public long? UserSeqNum { get; set; }
+    [Parameter]
+    public EventCallback<bool> OnUserUpdated { get; set; }
+
+    TelerikNotification NotificationComponent { get; set; }
+    public User Entity { get; set; } = new User();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await GetUser();
+    }
+
+    private async Task GetUser()
+    {
+        Entity = await UserService.GetUser(new UserFilter { SeqNum = UserSeqNum });
+    }
+
+    public async void UpdateUser()
+    {
+        try
+        {
+            await UserService.UpdateUser(Entity);
+            Visible = false;
+            VisibleChanged.InvokeAsync();
+            OnUserUpdated.InvokeAsync(true);
+            StateHasChanged();
+
+            NotificationComponent.Show(new NotificationModel()
+                {
+                    Text = "User Update Successful",
+                    ThemeColor = "success",
+                    ShowIcon = true,
+                    Icon = "success"
+                });
+        }
+        catch (Exception ex)
+        {
+            NotificationComponent.Show(new NotificationModel()
+                {
+                    Text = $"User Update Failed: {ex.Message.ToString()}",
+                    ThemeColor = "error",
+                    ShowIcon = true,
+                    Icon = "error"
+                });
+            OnUserUpdated.InvokeAsync(true);
+        }
+    }
+}
