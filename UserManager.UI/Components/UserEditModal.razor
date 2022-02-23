@@ -32,6 +32,8 @@
     [Parameter]
     public long? UserSeqNum { get; set; }
     [Parameter]
+    public EventCallback<long?> UserSeqNumChanged { get; set; }
+    [Parameter]
     public EventCallback<bool> OnUserUpdated { get; set; }
 
     TelerikNotification NotificationComponent { get; set; }
@@ -45,6 +47,7 @@
     private async Task GetUser()
     {
         Entity = await UserService.GetUser(new UserFilter { SeqNum = UserSeqNum });
+        StateHasChanged();
     }
 
     public async void UpdateUser()
@@ -53,8 +56,8 @@
         {
             await UserService.UpdateUser(Entity);
             Visible = false;
-            VisibleChanged.InvokeAsync();
-            OnUserUpdated.InvokeAsync(true);
+            await VisibleChanged.InvokeAsync();
+            await OnUserUpdated.InvokeAsync(true);
             StateHasChanged();
 
             NotificationComponent.Show(new NotificationModel()
@@ -74,7 +77,7 @@
                     ShowIcon = true,
                     Icon = "error"
                 });
-            OnUserUpdated.InvokeAsync(true);
+            await OnUserUpdated.InvokeAsync(true);
         }
     }
 }

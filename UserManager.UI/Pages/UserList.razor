@@ -28,11 +28,11 @@
     </GridColumns>
 </TelerikGrid>
 
-<UserViewModal @bind-Visible="ViewVisible" OnEditClicked=@(() => {ViewVisible = false; EditVisible = true;}) UserSeqNum="SelectedUserSeqNum"></UserViewModal>
+<UserViewModal @bind-Visible="ViewVisible" OnEditClicked=@((x) => {ViewVisible = false; if(x)EditUserClicked(SelectedUserSeqNum);}) @bind-UserSeqNum="SelectedUserSeqNum"></UserViewModal>
 
-<UserEditModal @bind-Visible="EditVisible" OnUserUpdated=@(async (x) => {if(x){await GetAllUsers();}}) UserSeqNum="SelectedUserSeqNum"></UserEditModal>
+<UserEditModal @bind-Visible="EditVisible" OnUserUpdated=@(async (x) => {if(x)await GetAllUsers();}) @bind-UserSeqNum="SelectedUserSeqNum"></UserEditModal>
 
-<UserCreateModal @bind-Visible="CreateVisible" OnUserCreated=@(async (x) => {if(x){await GetAllUsers();}})></UserCreateModal>
+<UserCreateModal @bind-Visible="CreateVisible" OnUserCreated=@(async (x) => {if(x)await GetAllUsers();})></UserCreateModal>
 
 @code {
 
@@ -55,15 +55,15 @@
     public void ViewUserClicked(long? seqNum)
     {
         SelectedUserSeqNum = seqNum;
-        ViewVisible = true;
         StateHasChanged();
+        ViewVisible = true;
     }
 
     public void EditUserClicked(long? seqNum)
     {
         SelectedUserSeqNum = seqNum;
-        EditVisible = true;
         StateHasChanged();
+        EditVisible = true;
     }
 
 }

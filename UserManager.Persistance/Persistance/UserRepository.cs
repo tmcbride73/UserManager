@@ -38,12 +38,6 @@ namespace UserManager.Infrastructure.Persistance
         {
             var userData = await GetLocalData();
 
-            //var users = userData.Where(x =>
-            //x.UserName == filter.UserName
-            //|| x.FirstName == filter.FirstName
-            //|| x.LastName == filter.LastName
-            //|| x.Activity == filter.Activity);
-
             return userData;
         }
 
